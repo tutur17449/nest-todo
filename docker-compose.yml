@@ -1,0 +1,41 @@
+version: '3'
+services:
+  nest_todo_mongo:
+    container_name: nest_todo_mongo
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    env_file:
+      - .env
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./mongodb-data:/data/db
+      - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
+    networks:
+      nest_todo_db:
+
+  nest_todo_api:
+    container_name: nest_todo_api
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - nest_todo_mongo
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3000:3000'
+    networks:
+      nest_todo_db:
+      nest_todo_backend:
+
+networks:
+  nest_todo_db:
+    driver: bridge
+  nest_todo_backend:
+    driver: bridge
